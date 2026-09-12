@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "id": "shl.ipsumbar",
   "name": "Ipsumbar",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "author": "Sahil Huseynzade",
   "license": "MIT",
   "description": "Lorem ipsum generator for the Omarchy bar: paragraphs, sentences, words, characters, lists and titles in eleven flavors, as plain text, HTML, Markdown or JSON — copied or typed straight into the focused app.",
@@ -18,6 +18,133 @@
     "description": "Lorem ipsum generator with a control panel",
     "category": "Tools",
     "allowMultiple": false,
-    "defaultSection": "right"
+    "defaultSection": "right",
+    "schema": [
+      {
+        "key": "unit",
+        "type": "enum",
+        "label": "Unit",
+        "options": [
+          "paragraphs",
+          "sentences",
+          "words",
+          "characters",
+          "list",
+          "titles"
+        ],
+        "defaultValue": "paragraphs"
+      },
+      {
+        "key": "count",
+        "type": "integer",
+        "label": "Count",
+        "min": 1,
+        "max": 20000,
+        "step": 1,
+        "defaultValue": 3
+      },
+      {
+        "key": "flavor",
+        "type": "enum",
+        "label": "Flavor",
+        "options": [
+          "classic",
+          "cicero",
+          "english",
+          "hipster",
+          "bacon",
+          "cupcake",
+          "corporate",
+          "pirate",
+          "cat",
+          "space",
+          "dev"
+        ],
+        "defaultValue": "classic"
+      },
+      {
+        "key": "format",
+        "type": "enum",
+        "label": "Format",
+        "options": [
+          "plain",
+          "html",
+          "markdown",
+          "json"
+        ],
+        "defaultValue": "plain"
+      },
+      {
+        "key": "startWithOpening",
+        "type": "boolean",
+        "label": "Start with the flavor's opening",
+        "defaultValue": true
+      },
+      {
+        "key": "autoCopy",
+        "type": "boolean",
+        "label": "Copy on every change",
+        "defaultValue": false
+      },
+      {
+        "key": "sentenceLength",
+        "type": "enum",
+        "label": "Sentence length",
+        "options": [
+          "short",
+          "medium",
+          "long",
+          "mixed"
+        ],
+        "defaultValue": "mixed"
+      },
+      {
+        "key": "paragraphLength",
+        "type": "enum",
+        "label": "Paragraph length",
+        "options": [
+          "short",
+          "medium",
+          "long",
+          "mixed"
+        ],
+        "defaultValue": "medium"
+      },
+      {
+        "key": "textCase",
+        "type": "enum",
+        "label": "Case",
+        "options": [
+          "sentence",
+          "lower",
+          "upper",
+          "title"
+        ],
+        "defaultValue": "sentence"
+      },
+      {
+        "key": "listType",
+        "type": "enum",
+        "label": "List style",
+        "options": [
+          "bullets",
+          "numbered"
+        ],
+        "defaultValue": "bullets"
+      },
+      {
+        "key": "headings",
+        "type": "boolean",
+        "label": "Heading before each paragraph",
+        "defaultValue": false
+      },
+      {
+        "key": "seed",
+        "type": "string",
+        "label": "Seed",
+        "defaultValue": "",
+        "description": "Same seed, same text. Leave empty for random."
+      }
+    ]
   }
 }

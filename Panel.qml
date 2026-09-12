@@ -7,8 +7,10 @@ import "lib/Model.js" as Model
 
 // Ipsumbar control panel: pick what to generate (unit, count, flavor,
 // format, style), watch the live preview, then copy it or type it into the
-// focused app. Options persist to ~/.config/omarchy/ipsumbar/settings.json.
-// All text generation is in lib/Model.js; this file is UI plus plumbing.
+// focused app. Options persist on the widget's own entry in shell.json through
+// the shell's updateEntryInline API, so the plugin itself never touches the
+// filesystem. Every subprocess is a fixed absolute executable run with a
+// cleared environment. All text generation is in lib/Model.js.
 //
 // Visual language follows the first-party panels (omarchy.power is the
 // reference): a hero with a display-size glyph and a big number on the
@@ -28,14 +30,20 @@ Panel {
   readonly property color faint: Qt.darker(fg, 1.8)
   readonly property string fontFamily: bar ? bar.fontFamily : Style.font.family
 
-  readonly property string home: Quickshell.env("HOME")
-  readonly property string stateDir: home + "/.config/omarchy/ipsumbar"
-  readonly property string statePath: stateDir + "/settings.json"
+  // Only what the Wayland clients and the session bus need; nothing else
+  // from the shell's environment leaks into subprocesses.
+  readonly property var waylandEnv: ({
+    "WAYLAND_DISPLAY": Quickshell.env("WAYLAND_DISPLAY"),
+    "XDG_RUNTIME_DIR": Quickshell.env("XDG_RUNTIME_DIR")
+  })
+  readonly property var busEnv: ({
+    "DBUS_SESSION_BUS_ADDRESS": Quickshell.env("DBUS_SESSION_BUS_ADDRESS"),
+    "XDG_RUNTIME_DIR": Quickshell.env("XDG_RUNTIME_DIR")
+  })
 
   // ---- State ---------------------------------------------------------------
   property var opts: Model.defaultOptions()
   property var result: Model.generate(opts)
-  property bool loaded: false
   property string flash: ""
   property bool copiedPulse: false
   property string pendingInsert: ""
@@ -69,7 +77,7 @@ Panel {
     if (key === "unit" && value !== root.opts.unit) next.count = Model.defaultCountFor(value)
     root.opts = Model.sanitizeOptions(next)
     if (key !== "styleOpen" && key !== "autoCopy") root.regenerate()
-    saveTimer.restart()
+    root.persist()
   }
 
   // Merge a JSON payload into the saved options (IPC `set`).
@@ -80,7 +88,7 @@ Panel {
     for (var k2 in ov) next[k2] = ov[k2]
     root.opts = Model.sanitizeOptions(next)
     root.regenerate()
-    saveTimer.restart()
+    root.persist()
   }
 
   function regenerate() {
@@ -100,16 +108,17 @@ Panel {
     pulseTimer.restart()
   }
 
-  function copyText(text, notify) {
+  function copyText(text, notify, description) {
     if (!text) return
-    copyProc.payload = text
     if (copyProc.running) copyProc.running = false
+    copyProc.payload = text
+    copyProc.typeAfter = false
     copyProc.stdinEnabled = true
     copyProc.running = true
     var label = "Copied " + Model.plural(root.result.stats.words, "word")
     root.showFlash(label)
     root.pulse()
-    if (notify) root.notify(label, root.summary)
+    if (notify) root.notify(label, description || root.summary)
   }
 
   function copyCurrent() { root.copyText(root.result.text, false) }
@@ -120,7 +129,7 @@ Panel {
     var o = Model.mergeOptions(root.opts, Model.parseOverrides(json))
     var r = Model.generate(o)
     root.result = r
-    root.copyText(r.text, notify === true || !root.opened)
+    root.copyText(r.text, notify === true || !root.opened, Model.describe(o))
   }
 
   function generateText(json) {
@@ -148,97 +157,110 @@ Panel {
     root.insertText(r.text)
   }
 
+  // Low-urgency toast with the pilcrow glyph, sent straight to
+  // org.freedesktop.Notifications the way omarchy-notification-send does it,
+  // so the headline and body are typed D-Bus strings and never argv options.
   function notify(headline, body) {
-    Quickshell.execDetached(["omarchy-notification-send", "-g", "󰛘", headline, body])
+    if (notifyProc.running) return
+    notifyProc.command = [
+      "/usr/bin/busctl", "--user", "--", "call",
+      "org.freedesktop.Notifications", "/org/freedesktop/Notifications",
+      "org.freedesktop.Notifications", "Notify", "susssasa{sv}i",
+      "Ipsumbar", "0", "", String(headline), String(body),
+      "0",
+      "2", "urgency", "y", "0", "omarchy-glyph", "s", "󰛘",
+      "-1"
+    ]
+    notifyProc.running = true
   }
 
   // ---- Persistence ---------------------------------------------------------
+  //
+  // The options live inline on this widget's entry in shell.json, exactly
+  // like a first-party widget's settings. The shell owns the file: it
+  // validates the caller, rewrites the entry, and reloads. The panel never
+  // opens a file itself. When another bar instance (a second monitor) or a
+  // hand edit changes the entry, the host re-injects `settings` and the
+  // panel follows.
 
-  // Runs on first load and whenever another bar instance (a second
-  // monitor) writes the file, so every panel shows the same options.
-  function onStateLoaded() {
-    var next = Model.sanitizeOptions(stateAdapter.options)
-    var changed = JSON.stringify(next) !== JSON.stringify(root.opts)
-    if (!changed && root.loaded) return
+  function persist() {
+    if (!root.bar || !root.bar.shell || typeof root.bar.shell.updateEntryInline !== "function") return
+    var entry = {}
+    var o = Model.sanitizeOptions(root.opts)
+    for (var k in o) entry[k] = o[k]
+    root.bar.shell.updateEntryInline(root.moduleName, entry)
+  }
+
+  function syncFromSettings() {
+    var next = Model.sanitizeOptions(root.settings)
+    if (JSON.stringify(next) === JSON.stringify(root.opts)) return
     root.opts = next
-    root.loaded = true
     root.result = Model.generate(root.opts)
   }
 
-  FileView {
-    id: stateFile
-    path: root.statePath
-    printErrors: false
-    atomicWrites: true
-    watchChanges: true
-    onFileChanged: reload()
-    onLoaded: root.onStateLoaded()
-    onLoadFailed: { /* first run: ensureDirProc seeds the file and reloads */ }
-
-    JsonAdapter {
-      id: stateAdapter
-      property var options: ({})
-    }
-  }
-
-  Process {
-    id: ensureDirProc
-    environment: ({ "HOME": root.home })
-    command: ["bash", "-c",
-      "mkdir -p \"$HOME/.config/omarchy/ipsumbar\"; f=\"$HOME/.config/omarchy/ipsumbar/settings.json\"; [[ -f \"$f\" ]] || printf '{}\\n' > \"$f\""]
-    onExited: stateFile.reload()
-  }
-
-  Timer {
-    id: saveTimer
-    interval: 600
-    onTriggered: {
-      stateAdapter.options = root.opts
-      stateFile.writeAdapter()
-    }
-  }
-
-  Component.onCompleted: ensureDirProc.running = true
+  onSettingsChanged: syncFromSettings()
 
   // ---- Processes -------------------------------------------------------------
+  //
+  // Fixed absolute executables, cleared environment, argv only. The text
+  // goes over stdin so byte-exact output (no trailing newline, any length)
+  // lands in the clipboard.
 
-  // The text goes over stdin so byte-exact output (no trailing newline,
-  // any length) lands in the clipboard.
   Process {
     id: copyProc
     property string payload: ""
-    command: ["wl-copy", "--type", "text/plain"]
+    property bool typeAfter: false
+    command: ["/usr/bin/wl-copy", "--type", "text/plain"]
+    clearEnvironment: true
+    environment: root.waylandEnv
     stdinEnabled: true
     onStarted: {
       write(payload)
       payload = ""
       stdinEnabled = false
     }
+    onExited: {
+      if (!typeAfter) return
+      typeAfter = false
+      wtypeTimer.restart()
+    }
+  }
+
+  // Insert = clipboard + Shift+Insert into the focused window, the route
+  // omarchy-menu-emoji-insert takes. The short delay lets the clipboard
+  // offer settle before the paste keystroke.
+  Timer {
+    id: wtypeTimer
+    interval: 150
+    onTriggered: if (!wtypeProc.running) wtypeProc.running = true
   }
 
   Process {
-    id: insertProc
-    property string payload: ""
-    command: ["bash", "-c",
-      "t=$(cat; printf x); t=${t%x}; printf '%s' \"$t\" | wl-copy --type text/plain; sleep 0.15; wtype -M shift -k Insert -m shift"]
-    stdinEnabled: true
-    onStarted: {
-      write(payload)
-      payload = ""
-      stdinEnabled = false
-    }
+    id: wtypeProc
+    command: ["/usr/bin/wtype", "-M", "shift", "-k", "Insert", "-m", "shift"]
+    clearEnvironment: true
+    environment: root.waylandEnv
   }
 
+  Process {
+    id: notifyProc
+    clearEnvironment: true
+    environment: root.busEnv
+  }
+
+  // Runs after the panel has closed so keyboard focus is back on the app.
   Timer {
     id: insertTimer
     interval: 320
     onTriggered: {
       if (!root.pendingInsert) return
-      insertProc.payload = root.pendingInsert
+      var text = root.pendingInsert
       root.pendingInsert = ""
-      if (insertProc.running) insertProc.running = false
-      insertProc.stdinEnabled = true
-      insertProc.running = true
+      if (copyProc.running) copyProc.running = false
+      copyProc.payload = text
+      copyProc.typeAfter = true
+      copyProc.stdinEnabled = true
+      copyProc.running = true
     }
   }
 

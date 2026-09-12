@@ -31,9 +31,10 @@ focused app.
   `s` toggle style · `j`/`k` scroll · `Esc` close · `Tab` next panel.
 - **Bar clicks** — left opens the panel, middle copies a fresh batch with
   the current settings (with a notification), right inserts one.
-- **IPC** for keybindings and scripts (below). Settings persist in
-  `~/.config/omarchy/ipsumbar/settings.json` and stay in sync across
-  monitors.
+- **IPC** for keybindings and scripts (below). Settings persist on the
+  widget's own entry in `~/.config/omarchy/shell.json`, written by the
+  shell through its plugin API, so they stay in sync across monitors and
+  can also be edited in Setup › Plugins.
 
 ## Install
 
@@ -48,19 +49,22 @@ The 󰛘 widget lands in the right section of the bar. Move it with
 
 ```bash
 omarchy plugin remove shl.ipsumbar
-rm -rf ~/.config/omarchy/ipsumbar   # optional: saved settings
 ```
 
-Removing the plugin takes its entry out of the bar layout in
-`~/.config/omarchy/shell.json`; nothing else on the system is touched.
+That removes the widget's entry, settings included, from the bar layout
+in `~/.config/omarchy/shell.json`. The plugin writes no other files.
 
 ## Dependencies
 
-Everything Ipsumbar runs ships with Omarchy: `wl-copy` (wl-clipboard)
-for the clipboard, `wtype` for Insert, `bash`, and
-`omarchy-notification-send` for the copy notification. No sudo or pkexec
-is required, no network access, and no files are written outside
-`~/.config/omarchy/ipsumbar/`. Node.js is only needed to run the tests.
+Everything Ipsumbar runs ships with Omarchy: `/usr/bin/wl-copy`
+(wl-clipboard) for the clipboard, `/usr/bin/wtype` for Insert, and
+`/usr/bin/busctl` (systemd) to post the copy notification on
+`org.freedesktop.Notifications`. Each is invoked by absolute path with a
+fixed argv and a cleared environment (only `WAYLAND_DISPLAY`,
+`XDG_RUNTIME_DIR`, or `DBUS_SESSION_BUS_ADDRESS` as needed); there is no
+shell in the loop. No sudo or pkexec, no network access, and the plugin
+never opens a file itself: settings are stored by the shell on the
+widget's `shell.json` entry. Node.js is only needed to run the tests.
 
 ## IPC
 
@@ -71,11 +75,11 @@ omarchy-shell shl.ipsumbar copyWith '{"unit":"words","count":50}'  # …with one
 omarchy-shell shl.ipsumbar insert                                  # paste a fresh batch into the focused app
 omarchy-shell shl.ipsumbar insertWith '{"unit":"sentences","count":2}'
 omarchy-shell shl.ipsumbar generate '{"unit":"titles","count":1}'  # print text to stdout
-omarchy-shell shl.ipsumbar set '{"flavor":"pirate","format":"html"}'  # change saved settings
+omarchy-shell shl.ipsumbar set '{"flavor":"pirate","format":"html"}'  # change saved settings (shell.json)
 omarchy-shell shl.ipsumbar options                                 # print saved settings as JSON
 ```
 
-Override keys match the settings file: `unit` (`paragraphs`, `sentences`,
+Override keys match the entry fields in `shell.json`: `unit` (`paragraphs`, `sentences`,
 `words`, `characters`, `list`, `titles`), `count`, `flavor` (`classic`,
 `cicero`, `english`, `hipster`, `bacon`, `cupcake`, `corporate`, `pirate`,
 `cat`, `space`, `dev`), `format` (`plain`, `html`, `markdown`,

@@ -4,20 +4,20 @@ import Quickshell.Io
 import qs.Ui
 import qs.Commons
 
-// Bar widget: a pilcrow glyph that opens the Omaipsum panel. Left click
+// Bar widget: a pilcrow glyph that opens the Ipsumbar panel. Left click
 // toggles the panel, middle click copies a fresh batch with the current
 // settings, right click types one into the focused app. Generation and
 // settings live in Panel.qml; this file only hosts it and exposes IPC.
 BarWidget {
   id: root
-  moduleName: "shl.omaipsum"
+  moduleName: "shl.ipsumbar"
 
   readonly property string glyph: "󰛘"
   readonly property var panel: panelLoader.item
 
   readonly property string tooltip: panel
-    ? "Omaipsum · " + panel.summary + "\nclick panel · middle copy · right insert"
-    : "Omaipsum"
+    ? "Ipsumbar · " + panel.summary + "\nclick panel · middle copy · right insert"
+    : "Ipsumbar"
 
   // ---- Panel shape contract for shell.summon/hide/toggle routing ---------
   readonly property bool opened: panel ? panel.opened === true : false
@@ -58,13 +58,13 @@ BarWidget {
     }
   }
 
-  // omarchy-shell shl.omaipsum copy
-  // omarchy-shell shl.omaipsum copyWith '{"unit":"words","count":50}'
-  // omarchy-shell shl.omaipsum insertWith '{"unit":"sentences","count":2}'
-  // omarchy-shell shl.omaipsum generate '{"unit":"titles","count":1}'   → prints text
-  // omarchy-shell shl.omaipsum set '{"flavor":"pirate"}'                → changes saved options
+  // omarchy-shell shl.ipsumbar copy
+  // omarchy-shell shl.ipsumbar copyWith '{"unit":"words","count":50}'
+  // omarchy-shell shl.ipsumbar insertWith '{"unit":"sentences","count":2}'
+  // omarchy-shell shl.ipsumbar generate '{"unit":"titles","count":1}'   → prints text
+  // omarchy-shell shl.ipsumbar set '{"flavor":"pirate"}'                → changes saved options
   IpcHandler {
-    target: "shl.omaipsum"
+    target: "shl.ipsumbar"
     function open(): void { root.open() }
     function close(): void { root.close() }
     function show(): void { root.open() }

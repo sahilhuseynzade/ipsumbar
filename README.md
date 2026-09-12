@@ -1,11 +1,11 @@
-# Omaipsum
+# Ipsumbar
 
 **Lorem ipsum generator for [Omarchy](https://omarchy.org).**
 A pilcrow in your bar; click it and a panel lets you dial in exactly the
 placeholder text you need, then copy it or type it straight into the
 focused app.
 
-![Omaipsum](preview.png)
+![Ipsumbar](preview.png)
 
 ## Features
 
@@ -32,23 +32,23 @@ focused app.
 - **Bar clicks** — left opens the panel, middle copies a fresh batch with
   the current settings (with a notification), right inserts one.
 - **IPC** for keybindings and scripts (below). Settings persist in
-  `~/.config/omarchy/omaipsum/settings.json` and stay in sync across
+  `~/.config/omarchy/ipsumbar/settings.json` and stay in sync across
   monitors.
 
 ## Install
 
 ```bash
-omarchy plugin add https://github.com/sahilhuseynzade/omaipsum.git --enable
+omarchy plugin add https://github.com/sahilhuseynzade/ipsumbar.git --enable
 ```
 
 The 󰛘 widget lands in the right section of the bar. Move it with
-`omarchy bar move shl.omaipsum --section center`.
+`omarchy bar move shl.ipsumbar --section center`.
 
 ## Uninstall
 
 ```bash
-omarchy plugin remove shl.omaipsum
-rm -rf ~/.config/omarchy/omaipsum   # optional: saved settings
+omarchy plugin remove shl.ipsumbar
+rm -rf ~/.config/omarchy/ipsumbar   # optional: saved settings
 ```
 
 Removing the plugin takes its entry out of the bar layout in
@@ -56,23 +56,23 @@ Removing the plugin takes its entry out of the bar layout in
 
 ## Dependencies
 
-Everything Omaipsum runs ships with Omarchy: `wl-copy` (wl-clipboard)
+Everything Ipsumbar runs ships with Omarchy: `wl-copy` (wl-clipboard)
 for the clipboard, `wtype` for Insert, `bash`, and
 `omarchy-notification-send` for the copy notification. No sudo or pkexec
 is required, no network access, and no files are written outside
-`~/.config/omarchy/omaipsum/`. Node.js is only needed to run the tests.
+`~/.config/omarchy/ipsumbar/`. Node.js is only needed to run the tests.
 
 ## IPC
 
 ```bash
-omarchy-shell shell toggle shl.omaipsum '{}'                       # open / close the panel
-omarchy-shell shl.omaipsum copy                                    # copy a fresh batch (current settings)
-omarchy-shell shl.omaipsum copyWith '{"unit":"words","count":50}'  # …with one-off overrides
-omarchy-shell shl.omaipsum insert                                  # paste a fresh batch into the focused app
-omarchy-shell shl.omaipsum insertWith '{"unit":"sentences","count":2}'
-omarchy-shell shl.omaipsum generate '{"unit":"titles","count":1}'  # print text to stdout
-omarchy-shell shl.omaipsum set '{"flavor":"pirate","format":"html"}'  # change saved settings
-omarchy-shell shl.omaipsum options                                 # print saved settings as JSON
+omarchy-shell shell toggle shl.ipsumbar '{}'                       # open / close the panel
+omarchy-shell shl.ipsumbar copy                                    # copy a fresh batch (current settings)
+omarchy-shell shl.ipsumbar copyWith '{"unit":"words","count":50}'  # …with one-off overrides
+omarchy-shell shl.ipsumbar insert                                  # paste a fresh batch into the focused app
+omarchy-shell shl.ipsumbar insertWith '{"unit":"sentences","count":2}'
+omarchy-shell shl.ipsumbar generate '{"unit":"titles","count":1}'  # print text to stdout
+omarchy-shell shl.ipsumbar set '{"flavor":"pirate","format":"html"}'  # change saved settings
+omarchy-shell shl.ipsumbar options                                 # print saved settings as JSON
 ```
 
 Override keys match the settings file: `unit` (`paragraphs`, `sentences`,
@@ -87,7 +87,7 @@ A Hyprland binding that pastes three paragraphs wherever you are, in
 `~/.config/hypr/bindings.lua`:
 
 ```lua
-o.bind("SUPER SHIFT", "L", "exec", "omarchy-shell shl.omaipsum insertWith '{\"unit\":\"paragraphs\",\"count\":3}'", "Insert lorem ipsum")
+o.bind("SUPER SHIFT", "L", "exec", "omarchy-shell shl.ipsumbar insertWith '{\"unit\":\"paragraphs\",\"count\":3}'", "Insert lorem ipsum")
 ```
 
 ## Development
@@ -103,7 +103,7 @@ node as well as inside the shell). `docs/cover.html` renders `preview.png`
 from `docs/panel.png` (a 440px-wide screenshot of the panel) in any browser
 at 1600×900.
 
-To hack on it, copy the checkout into `~/.config/omarchy/plugins/shl.omaipsum/`;
+To hack on it, copy the checkout into `~/.config/omarchy/plugins/shl.ipsumbar/`;
 the shell reloads plugin code on save. IPC handlers only re-register on a
 shell restart, so run `omarchy restart shell` after editing `BarWidget.qml`.
 

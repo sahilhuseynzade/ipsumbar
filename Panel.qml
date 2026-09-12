@@ -5,9 +5,9 @@ import qs.Commons
 import qs.Ui
 import "lib/Model.js" as Model
 
-// Omaipsum control panel: pick what to generate (unit, count, flavor,
+// Ipsumbar control panel: pick what to generate (unit, count, flavor,
 // format, style), watch the live preview, then copy it or type it into the
-// focused app. Options persist to ~/.config/omarchy/omaipsum/settings.json.
+// focused app. Options persist to ~/.config/omarchy/ipsumbar/settings.json.
 // All text generation is in lib/Model.js; this file is UI plus plumbing.
 //
 // Visual language follows the first-party panels (omarchy.power is the
@@ -16,7 +16,7 @@ import "lib/Model.js" as Model
 // chip rows, and bordered action buttons.
 Panel {
   id: root
-  moduleName: "shl.omaipsum"
+  moduleName: "shl.ipsumbar"
 
   property var anchorItem: null
   property var hostWidget: null
@@ -29,7 +29,7 @@ Panel {
   readonly property string fontFamily: bar ? bar.fontFamily : Style.font.family
 
   readonly property string home: Quickshell.env("HOME")
-  readonly property string stateDir: home + "/.config/omarchy/omaipsum"
+  readonly property string stateDir: home + "/.config/omarchy/ipsumbar"
   readonly property string statePath: stateDir + "/settings.json"
 
   // ---- State ---------------------------------------------------------------
@@ -185,7 +185,7 @@ Panel {
     id: ensureDirProc
     environment: ({ "HOME": root.home })
     command: ["bash", "-c",
-      "mkdir -p \"$HOME/.config/omarchy/omaipsum\"; f=\"$HOME/.config/omarchy/omaipsum/settings.json\"; [[ -f \"$f\" ]] || printf '{}\\n' > \"$f\""]
+      "mkdir -p \"$HOME/.config/omarchy/ipsumbar\"; f=\"$HOME/.config/omarchy/ipsumbar/settings.json\"; [[ -f \"$f\" ]] || printf '{}\\n' > \"$f\""]
     onExited: stateFile.reload()
   }
 
@@ -425,7 +425,7 @@ Panel {
               Text {
                 width: parent.width
                 textFormat: Text.PlainText
-                text: "Omaipsum"
+                text: "Ipsumbar"
                 color: root.fg
                 font.family: root.fontFamily
                 font.pixelSize: Style.font.title

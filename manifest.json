@@ -1,12 +1,12 @@
 {
   "schemaVersion": 1,
-  "id": "shl.omaipsum",
-  "name": "Omaipsum",
+  "id": "shl.ipsumbar",
+  "name": "Ipsumbar",
   "version": "1.0.0",
   "author": "Sahil Huseynzade",
   "license": "MIT",
   "description": "Lorem ipsum generator for the Omarchy bar: paragraphs, sentences, words, characters, lists and titles in eleven flavors, as plain text, HTML, Markdown or JSON — copied or typed straight into the focused app.",
-  "repository": "https://github.com/sahilhuseynzade/omaipsum",
+  "repository": "https://github.com/sahilhuseynzade/ipsumbar",
   "kinds": [
     "bar-widget"
   ],
@@ -14,7 +14,7 @@
     "barWidget": "BarWidget.qml"
   },
   "barWidget": {
-    "displayName": "Omaipsum",
+    "displayName": "Ipsumbar",
     "description": "Lorem ipsum generator with a control panel",
     "category": "Tools",
     "allowMultiple": false,

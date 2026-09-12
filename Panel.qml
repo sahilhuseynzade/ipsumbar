@@ -41,6 +41,7 @@ Panel {
   property string pendingInsert: ""
 
   readonly property var unit: Model.unitById(opts.unit)
+  readonly property var flavorOptions: Model.FLAVORS.map(function(f) { return { value: f.id, label: f.name } })
   readonly property string summary: Model.describe(opts)
   readonly property string statsLine: {
     var s = root.result.stats
@@ -360,7 +361,7 @@ Panel {
       id: keyCatcher
       anchors.fill: parent
       clip: true
-      blocked: seedField.activeFocus || countField.field.activeFocus
+      blocked: seedField.activeFocus || countField.field.activeFocus || flavorSelect.popupOpen
       onCloseRequested: root.close()
       onTabRequested: function(direction) {
         if (root.bar && typeof root.bar.switchPanelFrom === "function")
@@ -514,26 +515,11 @@ Panel {
               }
             }
 
+            // Count and flavor share one row: "3 paragraphs  [Classic v]".
             Row {
               id: countRow
               width: parent.width
-              spacing: Style.space(6)
-
-              readonly property var presets: root.unit.presets
-              readonly property real cellWidth:
-                (width - spacing * (presets.length + 1) - countField.width - countNoun.width) / presets.length
-
-              Repeater {
-                model: countRow.presets
-
-                Chip {
-                  required property var modelData
-                  width: countRow.cellWidth
-                  text: String(modelData)
-                  active: root.opts.count === modelData
-                  onClicked: root.setOpt("count", modelData)
-                }
-              }
+              spacing: Style.space(8)
 
               NumberField {
                 id: countField
@@ -542,7 +528,7 @@ Panel {
                 accent: Color.accent
                 fontFamily: root.fontFamily
                 fontSize: Style.font.bodySmall
-                fieldWidth: Style.space(78)
+                fieldWidth: Style.space(92)
                 value: root.opts.count
                 from: 1
                 to: root.unit.max
@@ -550,29 +536,25 @@ Panel {
                 onModified: function(v) { root.setOpt("count", v) }
               }
 
-              CaptionText {
+              BodyText {
                 id: countNoun
                 anchors.verticalCenter: parent.verticalCenter
-                width: Style.space(72)
+                width: Style.space(84)
+                color: root.dim
                 text: root.unit.noun + (root.opts.count === 1 ? "" : "s")
               }
-            }
 
-            Flow {
-              width: parent.width
-              spacing: Style.space(6)
-
-              Repeater {
-                model: Model.FLAVORS
-
-                Chip {
-                  required property var modelData
-                  text: modelData.name
-                  fontSize: Style.font.caption
-                  active: root.opts.flavor === modelData.id
-                  tooltipText: modelData.opening ? "“" + modelData.opening + "…”" : "The original De finibus passage"
-                  onClicked: root.setOpt("flavor", modelData.id)
-                }
+              Dropdown {
+                id: flavorSelect
+                anchors.verticalCenter: parent.verticalCenter
+                width: parent.width - countField.width - countNoun.width - parent.spacing * 2
+                showLabel: false
+                foreground: root.fg
+                accent: Color.accent
+                fontFamily: root.fontFamily
+                value: root.opts.flavor
+                options: root.flavorOptions
+                onChanged: function(v) { root.setOpt("flavor", v) }
               }
             }
 

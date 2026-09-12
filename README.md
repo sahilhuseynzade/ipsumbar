@@ -44,6 +44,24 @@ omarchy plugin add https://github.com/sahilhuseynzade/omaipsum.git --enable
 The 󰛘 widget lands in the right section of the bar. Move it with
 `omarchy bar move shl.omaipsum --section center`.
 
+## Uninstall
+
+```bash
+omarchy plugin remove shl.omaipsum
+rm -rf ~/.config/omarchy/omaipsum   # optional: saved settings
+```
+
+Removing the plugin takes its entry out of the bar layout in
+`~/.config/omarchy/shell.json`; nothing else on the system is touched.
+
+## Dependencies
+
+Everything Omaipsum runs ships with Omarchy: `wl-copy` (wl-clipboard)
+for the clipboard, `wtype` for Insert, `bash`, and
+`omarchy-notification-send` for the copy notification. No sudo or pkexec
+is required, no network access, and no files are written outside
+`~/.config/omarchy/omaipsum/`. Node.js is only needed to run the tests.
+
 ## IPC
 
 ```bash

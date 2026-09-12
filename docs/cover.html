@@ -1,0 +1,89 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+  html, body { margin: 0; padding: 0; }
+  body {
+    width: 1600px; height: 900px; overflow: hidden;
+    background: #0b0e14;
+    font-family: "JetBrainsMono Nerd Font", "JetBrains Mono", monospace;
+    color: #d6dae0;
+    position: relative;
+  }
+  .glow {
+    position: absolute; inset: 0;
+    background:
+      radial-gradient(900px 600px at 78% 50%, rgba(120, 150, 200, 0.16), transparent 60%),
+      radial-gradient(700px 500px at 12% 20%, rgba(120, 150, 200, 0.10), transparent 60%);
+  }
+  .grid {
+    position: absolute; inset: 0;
+    background-image:
+      linear-gradient(rgba(255,255,255,0.035) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.035) 1px, transparent 1px);
+    background-size: 40px 40px;
+    mask-image: radial-gradient(1200px 800px at 50% 50%, #000 30%, transparent 100%);
+    -webkit-mask-image: radial-gradient(1200px 800px at 50% 50%, #000 30%, transparent 100%);
+  }
+  .left {
+    position: absolute; left: 110px; top: 0; height: 900px; width: 640px;
+    display: flex; flex-direction: column; justify-content: center;
+  }
+  .glyph {
+    font-size: 150px; line-height: 1; color: #e8ebf0;
+    text-shadow: 0 0 60px rgba(180, 200, 240, 0.35);
+    margin-left: -6px; margin-bottom: 8px;
+  }
+  h1 { font-size: 84px; margin: 0 0 12px; letter-spacing: -2px; color: #f2f4f7; font-weight: 700; }
+  .tag { font-size: 28px; color: #9aa3b2; margin: 0 0 40px; line-height: 1.35; }
+  .tag b { color: #d6dae0; font-weight: 600; }
+  .chips { display: flex; flex-wrap: wrap; gap: 12px; max-width: 620px; }
+  .chip {
+    border: 2px solid rgba(214, 218, 224, 0.35); border-radius: 4px;
+    padding: 10px 16px; font-size: 20px; color: #d6dae0; white-space: nowrap;
+    background: rgba(255,255,255,0.03);
+  }
+  .chip.on { background: rgba(214, 218, 224, 0.18); border-color: rgba(214,218,224,0.55); }
+  .hint { margin-top: 40px; font-size: 19px; color: #6f7886; letter-spacing: 0.3px; white-space: nowrap; }
+  .hint span { color: #9aa3b2; }
+  .shot {
+    position: absolute; right: 120px; top: 62px; width: 440px; height: 745px;
+    box-shadow: 0 40px 100px rgba(0,0,0,0.7), 0 0 0 1px rgba(255,255,255,0.06);
+    border-radius: 2px;
+  }
+  .shot img { display: block; width: 440px; height: 745px; }
+  .badge {
+    position: absolute; left: 110px; bottom: 40px; font-size: 17px; color: #6f7886;
+  }
+  .badge b { color: #9aa3b2; font-weight: 600; }
+</style>
+</head>
+<body>
+  <div class="glow"></div>
+  <div class="grid"></div>
+  <div class="left">
+    <div class="glyph">󰛘</div>
+    <h1>Omaipsum</h1>
+    <p class="tag">Lorem ipsum, from your bar.<br>Pick it, preview it, <b>copy</b> it or <b>type</b> it into any app.</p>
+    <div class="chips">
+      <div class="chip on">󰉽 Paragraphs</div>
+      <div class="chip">󰦩 Sentences</div>
+      <div class="chip">󰀬 Words</div>
+      <div class="chip">󰆙 Characters</div>
+      <div class="chip">󰉹 Lists</div>
+      <div class="chip">󰗴 Titles</div>
+    </div>
+    <div class="chips" style="margin-top:12px">
+      <div class="chip on">󰦨 Plain</div>
+      <div class="chip">󰌝 HTML</div>
+      <div class="chip">󰍔 Markdown</div>
+      <div class="chip">󰘦 JSON</div>
+      <div class="chip">11 flavors</div>
+    </div>
+    <div class="hint"><span>r</span> regenerate · <span>c</span> copy · <span>i</span> insert · <span>seed</span> it for repeatable text</div>
+  </div>
+  <div class="shot"><img src="panel.png" alt=""></div>
+  <div class="badge"><b>omarchy plugin add</b> github.com/sahilhuseynzade/omaipsum</div>
+</body>
+</html>
